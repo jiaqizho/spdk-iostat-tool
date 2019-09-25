@@ -24,7 +24,7 @@ $ git clone https://github.com/jiaqizho/spdk-iostat-tool.git
 Configure sysstat for your system:
 
 ```
-$ cd sysstat
+$ cd spdk-iostat-tool
 $ ./configure
 ```
 
