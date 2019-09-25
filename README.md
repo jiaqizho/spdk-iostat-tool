@@ -18,7 +18,7 @@ Build the environment of SPDK and DPDK according to the SPDK guide.
 Clone sysstat repository under the same folder as SPDK:
 
 ```
-$ git clone https://github.com/YamboZhou/spdk-iostat-tool.git
+$ git clone https://github.com/jiaqizho/spdk-iostat-tool.git
 ```
 
 Configure sysstat for your system:
