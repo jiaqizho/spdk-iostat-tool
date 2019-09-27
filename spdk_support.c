@@ -14,7 +14,7 @@
 #include "cJSON.h"
 #include "spdk_support.h"
 
-#define SPDK_RPC_GET_BDEVS_IOSTAT "get_bdevs_iostat"
+#define SPDK_RPC_GET_BDEVS_IOSTAT "bdev_get_iostat"
 #define MAX_RESPONSE_SIZE 8192
 
 enum spdk_iostat_bdev_major_number {
