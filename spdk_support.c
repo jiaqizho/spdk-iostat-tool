@@ -75,12 +75,30 @@ out:
 	return rc;
 }
 
+/*
+			"name":"Nvme0n1",
+            "bytes_read":36864,
+            "num_read_ops":2,
+            "bytes_written":0,
+            "num_write_ops":0,
+            "bytes_unmapped":0,
+            "num_unmap_ops":0,
+            "read_latency_ticks":275379796,
+            "write_latency_ticks":0,
+            "unmap_latency_ticks":0,
+            "queue_depth_polling_period":1,
+            "queue_depth":0,
+            "io_time":0,
+            "weighted_io_time":0
+*/
+
+
 int
 spdk_iostat_get_bdevs_iostat(struct spdk_iostat_info *io_info)
 {
-	int i, rc, index = 0, size = 0;
+	int i, rc, size = 0;
 	char *resp;
-	cJSON *json, *item, *obj_item;
+	cJSON *json, *item, *obj_item,*bdevs_item;
 
 	if (!g_client) {
 		return -1;
@@ -97,47 +115,50 @@ spdk_iostat_get_bdevs_iostat(struct spdk_iostat_info *io_info)
 
 	json = cJSON_Parse(resp);
 	size = cJSON_GetArraySize(json);
-
-	/* Skip first item since that's "tick_rate" insead of bdev. */
-	for (i = 1; i < size; i++) {
-		item = cJSON_GetArrayItem(json, i);
+	assert(size == 2);
+	
+	bdevs_item = cJSON_GetObjectItem(json,"bdevs");
+	size = cJSON_GetArraySize(bdevs_item);
+	for (i = 0; i < size; i++) {
+		item = cJSON_GetArrayItem(bdevs_item, i);
 		obj_item = cJSON_GetObjectItem(item, "name");
-		strcpy(io_info[index].bdev_name, obj_item->valuestring);
+		if (obj_item != NULL) strcpy(io_info[i].bdev_name, obj_item->valuestring);
 		obj_item = cJSON_GetObjectItem(item, "bytes_read");
-		io_info[index].rd_sectors = obj_item->valueint >> 9;
+		if (obj_item != NULL) io_info[i].rd_sectors = obj_item->valueint >> 9;
 		obj_item = cJSON_GetObjectItem(item, "bytes_written");
-		io_info[index].wr_sectors = obj_item->valueint >> 9;
+		if (obj_item != NULL) io_info[i].wr_sectors = obj_item->valueint >> 9;
 		obj_item = cJSON_GetObjectItem(item, "bytes_unmapped");
-		io_info[index].dc_sectors = obj_item->valueint >> 9;
+		if (obj_item != NULL) io_info[i].dc_sectors = obj_item->valueint >> 9;
 		obj_item = cJSON_GetObjectItem(item, "num_read_ops");
-		io_info[index].rd_ios = obj_item->valueint;
+		if (obj_item != NULL) io_info[i].rd_ios = obj_item->valueint;
 		obj_item = cJSON_GetObjectItem(item, "num_write_ops");
-		io_info[index].wr_ios = obj_item->valueint;
+		if (obj_item != NULL) io_info[i].wr_ios = obj_item->valueint;
 		obj_item = cJSON_GetObjectItem(item, "num_unmap_ops");
-		io_info[index].dc_ios = obj_item->valueint;
+		if (obj_item != NULL) io_info[i].dc_ios = obj_item->valueint;
 		obj_item = cJSON_GetObjectItem(item, "read_latency_ticks");
-		io_info[index].rd_ticks = obj_item->valueint;
+		if (obj_item != NULL) io_info[i].rd_ticks = obj_item->valueint;
 		obj_item = cJSON_GetObjectItem(item, "write_latency_ticks");
-		io_info[index].wr_ticks = obj_item->valueint;
+		if (obj_item != NULL) io_info[i].wr_ticks = obj_item->valueint;
 		obj_item = cJSON_GetObjectItem(item, "unmap_latency_ticks");
-		io_info[index].dc_ticks = obj_item->valueint;
+		if (obj_item != NULL) io_info[i].dc_ticks = obj_item->valueint;
 		obj_item = cJSON_GetObjectItem(item, "queue_depth");
-		io_info[index].ios_pgr = obj_item->valueint;
+		if (obj_item != NULL) io_info[i].ios_pgr = obj_item->valueint;
 		obj_item = cJSON_GetObjectItem(item, "io_time");
-		io_info[index].tot_ticks = obj_item->valueint;
+		if (obj_item != NULL) io_info[i].tot_ticks = obj_item->valueint;
 		obj_item = cJSON_GetObjectItem(item, "weighted_io_time");
-		io_info[index].rq_ticks = obj_item->valueint;
+		if (obj_item != NULL) io_info[i].rq_ticks = obj_item->valueint;
 		/* There are always zero bacause SPDK doesn't
 		 * have merge operations in bdev layer.
 		 */
-		io_info[index].rd_merges = 0;
-		io_info[index].wr_merges = 0;
-		io_info[index].dc_merges = 0;
-		index++;
+		io_info[i].rd_merges = 0;
+		io_info[i].wr_merges = 0;
+		io_info[i].dc_merges = 0;
 	}
+	
 	free(resp);
 	cJSON_Delete(json);
-	return index;
+	
+	return size;
 }
 
 int
