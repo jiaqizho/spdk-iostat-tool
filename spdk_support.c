@@ -97,7 +97,6 @@ spdk_iostat_get_bdevs_iostat(struct spdk_iostat_info *io_info)
 
 	json = cJSON_Parse(resp);
 	size = cJSON_GetArraySize(json);
-	assert(size == 2);
 	
 	bdevs_item = cJSON_GetObjectItem(json,"bdevs");
 	size = cJSON_GetArraySize(bdevs_item);
